@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:batch="http://www.springframework.org/schema/batch"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+  http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+  http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<import resource="classpath:/common-context.xml"/>
+	
+	<job id="myJob2"
+		xmlns="http://www.springframework.org/schema/batch">
+		<step id="myStep1" next="myStep2">
+			<tasklet ref="counterIncrementerTasklet"/>
+		</step>
+		<step id="myStep2" next="myStep3">
+			<tasklet ref="counterIncrementerTasklet"/>
+		</step>
+		<step id="myStep3">
+			<tasklet ref="counterIncrementerTasklet2"/>
+		</step>
+	</job>
+	
+	<bean id="counterIncrementerTasklet"
+		class="com.fwantastic.example2.CounterIncrementerTasklet"
+		scope="step"/>
+		
+	<bean id="counterIncrementerTasklet2"
+		class="com.fwantastic.example2.CounterIncrementerTasklet"
+		scope="step"/>
+		<property name="counter"
+			value="#{jobExecutionContext['MY.COUNTER']}"/>
+  </beans>
