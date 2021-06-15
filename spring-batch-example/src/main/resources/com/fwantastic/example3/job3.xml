@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:batch="http://www.springframework.org/schema/batch"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+  http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+  http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<import resource="classpath:/common-context.xml"/>
+	
+	<jdbc:initialize-database 
+		data-source="dataSource">
+		<jdbc:script
+			location="classpath:com/fwantastic/example3/create-table.sql"/>
+	</jdbc:initialize-database>
+	
+	<job id="myJob3"
+		xmlns="http://www.springframework.org/schema/batch">
+		<step id="myStep1">
+			<tasklet>
+				<chunk reader="csvReader"
+					processor="personProcessor" writer="personWriter"
+					commit-interval="10"/>
+			</tasklet>
+		</step>
+	</job>  
+  
+  	<bean id="csvReader"
+  		class="org.springframework.batch.item.file.FlatFileItemReader">
+  		<property name="resource"
+  			value="classpath:com/fwantastic/example3/input.csv"/>
+  		<property name="lineMapper">
+  			<bean
+  				class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+  				<property name="lineTokenizer">
+  					<bean
+  					 	class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+  					 	<property name="names"
+  					 		value="PERSON_ID,FULL_NAME"/>	
+  					 </bean>
+  				</property>	
+  				<property name="fieldSetMapper">
+  					<bean id="fieldSetMapper"
+  						class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper"
+  						scope="step">
+  						<property name="prototypeBeanName"
+  							value="person"></property>
+  					</bean>
+  				</property>
+  			</bean>
+  		</property>	
+  				
+		<property name="linesToSkip" value="1"/>
+  	</bean>
+  	
+  	<bean id="person" class="com.fwantastic.example3.Person"
+  		scope="prototype"/>
+  		
+  	<bean id="personProcessor"
+  		class="com.fwantastic.example3.PersonProcessor" scope="step"/>
+  		
+  	<bean id="personWriter"
+  		class="org.springframework.batch.item.database.JdbcBatchItemWriter"
+  		scope="step">
+  		<property name="dataSource" ref="dataSource"/>
+  		<property name="sql">
+  			<value>
+  				<![CDATA[
+  					INSERT INTO PERSON
+  					(PERSON_ID, FIRST_NAME, LAST_NAME) VALUES
+  					(:personId, :firstName, :lastName)
+  				]]>
+  			</value>
+  		</property>
+  		
+  		<property name="itemSqlParameterSourceProvider">
+  			<bean
+  				class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider"/>
+  		</property>	
+  	</bean>
+</beans>

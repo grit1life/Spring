@@ -32,7 +32,8 @@
 		
 	<bean id="counterIncrementerTasklet2"
 		class="com.fwantastic.example2.CounterIncrementerTasklet"
-		scope="step"/>
+		scope="step">
 		<property name="counter"
 			value="#{jobExecutionContext['MY.COUNTER']}"/>
+	</bean>
   </beans>
