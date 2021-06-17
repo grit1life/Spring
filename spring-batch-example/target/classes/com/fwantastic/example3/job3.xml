@@ -39,7 +39,7 @@
   				class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
   				<property name="lineTokenizer">
   					<bean
-  					 	class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+  					 	class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
   					 	<property name="names"
   					 		value="PERSON_ID,FULL_NAME"/>	
   					 </bean>

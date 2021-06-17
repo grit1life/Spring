@@ -21,7 +21,6 @@ public class CounterIncrementerTasklet implements Tasklet{
 		System.out.println("д╚©Нем: "+ counter);
 		
 		jobExecutionContext.put(MY_COUNTER_KEY, counter+1);
-		
 		return RepeatStatus.FINISHED;
 	}
 	
