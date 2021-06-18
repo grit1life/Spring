@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:batch="http://www.springframework.org/schema/batch"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+  http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+  http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<import resource="classpath:/common-context.xml"/>
+	<jdbc:initialize-database
+		data-source="dataSource">
+		<jdbc:script
+			location="classpath:com/fwantastic/example4/create-table.sql"/>
+	</jdbc:initialize-database>
+	<job id="myJob4"
+		xmlns="http://www.springframework/schema/batch">
+		<description>
+			JDBC로 디비를 읽어서 CSV 파일로 저장하는 예제
+		</description>
+		<step id="myStep1">
+			<tasklet>
+				<chunk reader="examReader"
+					processor="examProcessor" writer="examWriter"
+					commit-interval="10"/>
+			</tasklet>
+		</step>
+	</job>
+	<bean id="examReader"
+		class="org.springframework.batch.item.database.JdbcCursorItemReader">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="sql">
+			<value>
+				<![CDATA[
+				SELECT CLASS_NAME, STUDENT_NAME, SCORE
+				FROM EXAM
+				ORDER BY CLASS_NAME, STUDENT_NAME, SCORE
+				]]>
+			</value>
+		</property>
+		<property name="rowMapper" ref="examRowMapper"/>	
+	</bean>
+	<bean id="examRowMapper"
+		class="org.springframework.jdbc.core.BeanPropertyRowMapper"
+		scope="step">
+		<property name="mappedClass"
+			value="com.fwantastic.example4.Exam"/>	
+	</bean>
+	<bean id="examProcessor"
+		class="com.fwantastic.example4.ExamProcessor" scope="step"/>
+	<bean id="examWriter"
+		class="org.springframework.batch.item.file.FlatFileItemReader"
+		scope="step">
+		<property name="lineAggregator">
+			<bean
+				class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
+				<property name="dellimiter" value="," />
+				<property name="fieldExtractor">
+					<bean
+						class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
+					<property name="names"
+						value="className, studentName, grade"></property>	
+						</bean>
+				</property>
+			</bean>
+		</property>
+		<property name="resource">
+			<bean
+				class="org.springframework.core.io.FileSystemResource">
+				<constructor-arg name="path"
+					value="output/com/fwantastic/example4/output.csv"/>	
+			</bean>
+		</property>	
+		<property name="shouldDeleteIfExists" value="true"/>
+	</bean>	
+ </beans>
