@@ -19,7 +19,7 @@
 			location="classpath:com/fwantastic/example4/create-table.sql"/>
 	</jdbc:initialize-database>
 	<job id="myJob4"
-		xmlns="http://www.springframework/schema/batch">
+		xmlns="http://www.springframework.org/schema/batch">
 		<description>
 			JDBC로 디비를 읽어서 CSV 파일로 저장하는 예제
 		</description>
@@ -54,12 +54,12 @@
 	<bean id="examProcessor"
 		class="com.fwantastic.example4.ExamProcessor" scope="step"/>
 	<bean id="examWriter"
-		class="org.springframework.batch.item.file.FlatFileItemReader"
+		class="org.springframework.batch.item.file.FlatFileItemWriter"
 		scope="step">
 		<property name="lineAggregator">
 			<bean
 				class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
-				<property name="dellimiter" value="," />
+				<property name="delimiter" value="," />
 				<property name="fieldExtractor">
 					<bean
 						class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
